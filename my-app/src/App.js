@@ -1,43 +1,38 @@
-import React, { useRef, useEffect, useState } from 'react';
-import logo from './logo.svg';
+import React, {useState, useEffect} from 'react';
 import './App.css';
 import DataFetcher from './components/DataFetcher'
+import Map from './components/Map'
 
 // Map Imports
 import mapboxgl from '!mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoibm9oeXBlIiwiYSI6ImNsdjBlZXl5YjFpczkycW84NDl1Znl4YzEifQ.wGi61OuX6Ya5Q2HvYx_BDQ';
- 
+
 function App() {
-  const mapContainer = useRef(null);
-  const map = useRef(null);
-  const [lng, setLng] = useState(-70.9);
-  const [lat, setLat] = useState(42.35);
-  const [zoom, setZoom] = useState(9);
+  const [data, setData] = useState([])
 
   useEffect(() => {
-    if (map.current) return; // initialize map only once
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [lng, lat],
-      zoom: zoom
-    });
-    map.current.on('move', () => {
-      setLng(map.current.getCenter().lng.toFixed(4));
-      setLat(map.current.getCenter().lat.toFixed(4));
-      setZoom(map.current.getZoom().toFixed(2));
-    });
-  });
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/data');
+        if (!response.ok) {
+          throw new Error('Data fetching failed');
+        }
+        const jsonData = await response.json();
+        setData(jsonData);
+      } catch (error) {
+        console.error("Error fetching data", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="App">
-      <div className="sidebar">
-        Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
-      </div>
-      <div ref={mapContainer} className="map-container" />
-      <header className="App-header">
-        <DataFetcher />
+      {data.length > 0 ? <Map data={data} /> : <div>Loading map data...</div>}
+      <header className="App-header"> 
+        <DataFetcher data={data}/>
       </header>
     </div>
   );

@@ -69,7 +69,7 @@ data_df = data_df.drop_duplicates(subset=['org_name', 'name', 'address', 'unoccu
 # Convert to JSON form
 json_data = data_df.to_dict(orient='records')
 data_to_insert['data'] = json_data
-print(data_df.loc[data_df['name'] == "CONC Men's Shelter Lansdowne Ave"])
+# print(data_df.loc[data_df['name'] == "CONC Men's Shelter Lansdowne Ave"]) this was a test
 
 # Insert Data
 result = collection.insert_one(data_to_insert)

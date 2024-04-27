@@ -1,37 +1,39 @@
 import React, {useState, useEffect} from 'react';
 import Person from './GridItem'
 
-function DataFetcher() {
-    const [data, setData] = useState([]); // State to hold the fetched data
+function DataFetcher({data}) {
     const [filterCapacity, setFilterCapacity] = useState(null)
     const [searchQuery, setSearchQuery] = useState("")
     const [expandedItem, setExpandedItem] = useState(null)
     const [isExpanded, setIsExpanded] = useState(false) 
+    // // Fetch data from express server
+    // const fetchData = async () => {
+    //     try {
+    //         const response = await fetch('http://localhost:3001/api/data');
+    //         if (!response.ok) {
+    //             throw new Error('Data fetching failed');
+    //         }
+    //         const jsonData = await response.json();
+    //         //console.log("Fetched Data:", jsonData); 
 
-    const fetchData = async () => {
-        try {
-            const response = await fetch('http://localhost:3001/api/data');
-            if (!response.ok) {
-                throw new Error('Data fetching failed');
-            }
-            const jsonData = await response.json();
-            //console.log("Fetched Data:", jsonData); 
+    //         setData(jsonData);
+    //     } catch (error) {
+    //         console.error("Error fetching data", error);
+    //     }
+    // };
 
-            setData(jsonData);
-        } catch (error) {
-            console.error("Error fetching data", error);
-        }
-    };
-
+    // Handle displaying results after a filter button has been clicked
     const handleFilterChange = (capacity) => {
         setFilterCapacity(prev => prev === null ? capacity : null);
     }
 
+    // Make the expanded div visible and set the state to true
     const expandItem = (item) => {
         setExpandedItem(item);
         setIsExpanded(true)
     };
-
+    
+    // Set the isExpanded state to false to close the expanded div 
     const closeItem = () => {
         setIsExpanded(false)
     }
@@ -60,9 +62,9 @@ function DataFetcher() {
         };
     }).filter(item => item.data && item.data.length > 0); // Remove entries without any matching shelters
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    // useEffect(() => {
+    //     fetchData();
+    // }, []);
 
     return (
         <div>
@@ -89,10 +91,9 @@ function DataFetcher() {
                     </div>
                 ))}
             </ul>
-            {/* Conditional rendering of expanded card */}
+            {/* Conditional rendering of expanded card after clicking on a div*/}
             {isExpanded && expandedItem && (
                 <div className="expanded-card">
-                    {/* Render content of expanded item here */}
                     <h2>{expandedItem.name}</h2>
                     <p>Sector: {expandedItem.sector}</p>
                     <p>Organization Name: {expandedItem.org_name}</p>

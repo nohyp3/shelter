@@ -103,7 +103,14 @@ function Map({data}){
   
                               new mapboxgl.Marker()
                                   .setLngLat(coordinates)
-                                  .addTo(map.current);
+                                  .addTo(map.current)
+                                  .setPopup(
+                                    new mapboxgl.Popup({offset: 25})
+                                      .setHTML(
+                                        `<h3>${org.name}</h3>
+                                        <h3>${org.address}</h3>`
+                                      )
+                                  )
                           } catch (error) {
                               console.error('Error geocoding address:', org, error);
                           }

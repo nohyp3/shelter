@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import Person from './GridItem'
 
 function DataFetcher({data}) {
@@ -6,21 +6,6 @@ function DataFetcher({data}) {
     const [searchQuery, setSearchQuery] = useState("")
     const [expandedItem, setExpandedItem] = useState(null)
     const [isExpanded, setIsExpanded] = useState(false) 
-    // // Fetch data from express server
-    // const fetchData = async () => {
-    //     try {
-    //         const response = await fetch('http://localhost:3001/api/data');
-    //         if (!response.ok) {
-    //             throw new Error('Data fetching failed');
-    //         }
-    //         const jsonData = await response.json();
-    //         //console.log("Fetched Data:", jsonData); 
-
-    //         setData(jsonData);
-    //     } catch (error) {
-    //         console.error("Error fetching data", error);
-    //     }
-    // };
 
     // Handle displaying results after a filter button has been clicked
     const handleFilterChange = (capacity) => {
@@ -61,10 +46,6 @@ function DataFetcher({data}) {
             (!searchQuery || matchesSearch(shelter)))
         };
     }).filter(item => item.data && item.data.length > 0); // Remove entries without any matching shelters
-
-    // useEffect(() => {
-    //     fetchData();
-    // }, []);
 
     return (
         <div>

@@ -11,7 +11,7 @@ load_dotenv('./my-app/.env')
 user = os.getenv('DB_USER')
 password = os.getenv('DB_PASSWORD')
 
-uri = os.getenv('DB_URI')
+uri = os.getenv('DB_URL')
 client = MongoClient(uri, server_api=ServerApi('1'))
 
 db = client['shelter']
@@ -34,7 +34,8 @@ for resource in package["result"]["resources"]:
         resource_search_data = requests.get(url, params=p).json()["result"]
         
         resource_data = [
-            {
+            {   
+                "id": item["_id"],
                 "org_name": item["ORGANIZATION_NAME"],
                 "name": item["LOCATION_NAME"],
                 "address": item['LOCATION_ADDRESS'],

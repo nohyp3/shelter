@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 
 // Map Imports
-import {SearchBox} from '@mapbox/search-js-react';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import mapboxgl from '!mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 import * as turf from '@turf/turf';
 
@@ -11,13 +11,21 @@ function Map({data}){
     const [lng, setLng] = useState(-79.34);
     const [lat, setLat] = useState(43.65);
     const [zoom, setZoom] = useState(9);
-    const [value, setValue] = useState('');
-    const [address, setAddress] = useState('');
+    let markers = [];
 
-    const handleAddressChange = (newAddress) => {
-      setAddress(newAddress); // Assuming 'place_name' holds the full address string
-      console.log(newAddress)
-    };
+    // Function to find the nearest marker
+    function findNearestMarker(markers, lat, lng) {
+      let nearestMarker = null;
+      let nearestDistance = Infinity;
+      for (const marker of markers) {
+        const distance = turf.distance(turf.point([lng, lat]), turf.point(marker));
+        if (distance < nearestDistance) {
+          nearestMarker = marker;
+          nearestDistance = distance;
+        }
+      }
+      return nearestMarker;
+    }
 
     useEffect(() => {
         if (map.current){
@@ -30,23 +38,46 @@ function Map({data}){
           center: [lng, lat],
           zoom: zoom
         });
+        map.current.on('load', () => {
+          const geocoder = new MapboxGeocoder({
+            accessToken: mapboxgl.accessToken, // Set the access token
+            mapboxgl: mapboxgl, // Set the mapbox-gl instance
+            marker: true, // Use the geocoder's default marker style
+            bbox: [-79.931030, 43.325178, -78.975220, 44.087585] // Set the bounding box to the GTA
+          });
+          
+          // Add the geocoder to the map
+          map.current.addControl(geocoder, 'top-right');
+
+          // Add an event listener when an address is selected
+          geocoder.on('result', (event) => {
+            const searchResult = event.result.geometry.coordinates;
+            console.log("geocoder "+searchResult)
+            // Get the nearest marker
+            let nearest = findNearestMarker(markers,searchResult[1],searchResult[0]);
+            console.log("nearest "+nearest)
+          });
+        });
+        
+        // Adjust the lat and long displayed on the site when map is moved 
         map.current.on('move', () => {
           setLng(map.current.getCenter().lng.toFixed(4));
           setLat(map.current.getCenter().lat.toFixed(4));
           setZoom(map.current.getZoom().toFixed(2));
         });
+
         // add markers to map
         const addMarkers = async () => {
           if (data && data.length > 0) {
               for (const entry of data) {
                   if (entry.data) {
-                      console.log("hello");
                       for (const org of entry.data) {
                           try {
                               const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(org.address)}.json?access_token=${mapboxgl.accessToken}`);
                               const geocodingData = await response.json();
                               const coordinates = geocodingData.features[0].center;
-  
+                              markers.push(coordinates);
+
                               new mapboxgl.Marker()
                                   .setLngLat(coordinates)
                                   .addTo(map.current)
@@ -77,9 +108,6 @@ function Map({data}){
                 Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
             </div>
             <div ref={mapContainer} className="map-container" />
-            <form>
-              <SearchBox accessToken={mapboxgl.accessToken} map={map.current} marker={true} mapboxgl={mapboxgl} onRetrieve={handleAddressChange} placeholder={"Enter your address"} value={value}/>
-            </form>
         </div>
     );
 }

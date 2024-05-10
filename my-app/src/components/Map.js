@@ -11,20 +11,21 @@ function Map({data}){
     const [lng, setLng] = useState(-79.34);
     const [lat, setLat] = useState(43.65);
     const [zoom, setZoom] = useState(9);
-    let markers = [];
+    const [markers, setMarkers] = useState([]); 
+    const [loadingMarkers, setLoadingMarkers] = useState(true);
 
     // Function to find the nearest marker
-    function findNearestMarker(markers, lat, lng) {
+    function findNearestMarker(lat, lng) {
       let nearestMarker = null;
       let nearestDistance = Infinity;
-      for (const marker of markers) {
-        const distance = turf.distance(turf.point([lng, lat]), turf.point(marker));
+      markers.forEach(markerData => {
+        const distance = turf.distance(turf.point([lng, lat]), turf.point(markerData.coordinates));
         if (distance < nearestDistance) {
-          nearestMarker = marker;
-          nearestDistance = distance;
+            nearestMarker = markerData;
+            nearestDistance = distance;
         }
-      }
-      return nearestMarker;
+    });
+    return nearestMarker;
     }
 
     useEffect(() => {
@@ -51,11 +52,20 @@ function Map({data}){
 
           // Add an event listener when an address is selected
           geocoder.on('result', (event) => {
+            if (loadingMarkers) {
+              alert("Markers are still loading.");
+              //return;
+            }
+            console.log("Current Markers:", markers)
             const searchResult = event.result.geometry.coordinates;
             console.log("geocoder "+searchResult)
             // Get the nearest marker
-            let nearest = findNearestMarker(markers,searchResult[1],searchResult[0]);
+            let nearest = findNearestMarker(searchResult[1],searchResult[0]);
             console.log("nearest "+nearest)
+            // Open the popup
+            if (nearest) {
+              nearest.marker.togglePopup(); 
+            }
           });
         });
         
@@ -65,41 +75,42 @@ function Map({data}){
           setLat(map.current.getCenter().lat.toFixed(4));
           setZoom(map.current.getZoom().toFixed(2));
         });
-
-        // add markers to map
-        const addMarkers = async () => {
-          if (data && data.length > 0) {
-              for (const entry of data) {
-                  if (entry.data) {
-                      for (const org of entry.data) {
-                          try {
-                              const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(org.address)}.json?access_token=${mapboxgl.accessToken}`);
-                              const geocodingData = await response.json();
-                              const coordinates = geocodingData.features[0].center;
-                              markers.push(coordinates);
-
-                              new mapboxgl.Marker()
-                                  .setLngLat(coordinates)
-                                  .addTo(map.current)
-                                  .setPopup(
-                                    new mapboxgl.Popup({offset: 25})
-                                      .setHTML(
-                                        `<h3>${org.name}</h3>
-                                        <h3>${org.address}</h3>`
-                                      )
-                                  )
-                          } catch (error) {
-                              console.error('Error geocoding address:', org, error);
-                          }
-                      }
-                  }
-              }
-          }
-          else {
-            console.log("no")
-          }
-      };
-  
+    }, [data]);
+    
+    useEffect(() => {
+      // add markers to map
+      const addMarkers = async () => {
+        if (data && data.length > 0) {
+            const localMarkers = [];
+            for (const entry of data) {
+                if (entry.data) {
+                    for (const org of entry.data) {
+                        try {
+                            const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(org.address)}.json?access_token=${mapboxgl.accessToken}`);
+                            const geocodingData = await response.json();
+                            const coordinates = geocodingData.features[0].center;
+                            const marker = new mapboxgl.Marker()
+                              .setLngLat(coordinates)
+                              .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<h3>${org.name}</h3><p>${org.address}</p>`))
+                              .addTo(map.current);
+                            localMarkers.push({
+                                coordinates: coordinates,
+                                marker: marker
+                            });
+                            //markers.push(coordinates);
+                        } catch (error) {
+                            console.error('Error geocoding address:', org, error);
+                        }
+                    }
+                }
+            }
+            setMarkers(localMarkers);
+            setLoadingMarkers(false);
+        }
+        else {
+          console.log("no")
+        }
+    };
       addMarkers();
     }, [data]);
     return(

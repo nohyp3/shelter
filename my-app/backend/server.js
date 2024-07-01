@@ -52,7 +52,7 @@ app.get('/hello', async (req,res) =>{
   }
 })
 
-// Api
+// return the most recent data entry
 app.get('/api/data', async (req,res) =>{
   try{
     const data = await MyModel.find({}, {date: 1, data: 1}).limit(1).sort({_id:1})
@@ -64,4 +64,17 @@ app.get('/api/data', async (req,res) =>{
   }
   
 })
+
+// return data from the past 7 days 
+app.get('/api/shelter/:shelterId', async (req,res) =>{
+  const {shelterId} = req.params;
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  try{
+    const data = await MyModel.find({date: {$gte: sevenDaysAgo}, 'data.id': parseInt(shelterId)}).sort({date: -1})
+    res.json(data)
+  } catch(error){
+    console.error('Error fetching data:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 

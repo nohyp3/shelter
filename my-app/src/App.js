@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/data');
+        const response = await fetch('https://shelter-backend.vercel.app/api/data');
         if (!response.ok) {
           throw new Error('Data fetching failed');
         }

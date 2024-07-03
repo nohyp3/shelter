@@ -33,6 +33,9 @@ database.once('connected', () => {
 // Enable cors
 const cors = require('cors');
 app.use(cors());
+app.use(cors({
+  origin: 'https://shelter-backend.vercel.app/'
+}));
 
 // Define a Mongoose Schema
 const schema = new mongoose.Schema({

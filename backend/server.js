@@ -51,6 +51,7 @@ app.get('/hello', async (req,res) =>{
     res.status(500).json({ message: 'Internal server error' });
   }
 })
+app.get("/", (req, res) => res.send("Express on Vercel"));
 
 // return the most recent data entry
 app.get('/api/data', async (req,res) =>{

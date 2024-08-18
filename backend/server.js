@@ -50,6 +50,8 @@ app.get('/hello', async (req,res) =>{
     res.status(500).json({ message: 'Internal server error' });
   }
 })
+
+// default route
 app.get("/", (req, res) => res.send("Express on Vercel"));
 
 // return the most recent data entry
@@ -66,13 +68,42 @@ app.get('/api/data', async (req,res) =>{
 })
 
 // return data from the past 7 days 
-app.get('/api/shelter/:shelterId', async (req,res) =>{
-  const {shelterId} = req.params;
+app.get('/api/shelter/:shelterId', async (req, res) => {
+  const { shelterId } = req.params;
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  try{
-    const data = await MyModel.find({date: {$gte: sevenDaysAgo}, 'data.id': parseInt(shelterId)}).sort({date: -1})
-    res.json(data)
-  } catch(error){
+
+  try {
+    const data = await MyModel.aggregate([
+      {
+        $match: {
+          date: { $gte: sevenDaysAgo },
+          'data.id': parseInt(shelterId)
+        }
+      },
+      {
+        $unwind: "$data"
+      },
+      {
+        $match: {
+          'data.id': parseInt(shelterId)
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          shelters: { $push: "$data" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          shelters: 1
+        }
+      }
+    ]);
+
+    res.json(data.length ? data[0].shelters : []);
+  } catch (error) {
     console.error('Error fetching data:', error);
     res.status(500).json({ message: 'Internal server error' });
   }

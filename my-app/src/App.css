@@ -35,6 +35,8 @@
   position: fixed;
   top: 50%;
   left: 50%;
+  height: 30vh;
+  overflow: scroll;
   transform: translate(-50%, -50%);
   background-color: white;
   padding: 20px;

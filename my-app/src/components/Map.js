@@ -108,7 +108,7 @@ function Map({data}){
             setLoadingMarkers(false);
         }
         else {
-          console.log("no")
+          console.log("error loading markers")
         }
     };
       addMarkers();

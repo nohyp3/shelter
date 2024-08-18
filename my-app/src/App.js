@@ -30,6 +30,9 @@ function App() {
 
   return (
     <div className="App">
+      <h1>
+        Shelter.
+      </h1>
       {data.length > 0 ? <Map data={data} /> : <div>Loading map data...</div>}
       <header className="App-header"> 
         <DataFetcher data={data}/>

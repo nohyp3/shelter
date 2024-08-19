@@ -69,40 +69,52 @@ app.get('/api/data', async (req,res) =>{
 
 // return data from the past 7 days 
 app.get('/api/shelter/:shelterId', async (req, res) => {
-  const { shelterId } = req.params; // id of the shelter to look for 
+  const { shelterId } = req.params;
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
   try {
     const data = await MyModel.aggregate([
       {
         $match: {
-          date: { $gte: sevenDaysAgo }, // only consider data from past 7 days using greater than or equal to 
-          'data.id': parseInt(shelterId) // only consider data with the matching id
+          date: { $gte: sevenDaysAgo },
+          'data.id': parseInt(shelterId)
         }
       },
       {
-        $unwind: "$data" 
+        $unwind: "$data"
       },
       {
         $match: {
-          'data.id': parseInt(shelterId) // only consider data with the matching id in the unwinded document 
+          'data.id': parseInt(shelterId)
         }
       },
       {
-        $group: { // group filtered data into an array 
+        $project: {
+          _id: 0,
+          date: 1,
+          shelterInfo: "$data"
+        }
+      },
+      {
+        $group: {
           _id: null,
-          shelters: { $push: "$data" }
+          shelters: {
+            $push: {
+              date: "$date",
+              shelterInfo: "$shelterInfo"
+            }
+          }
         }
       },
       {
-        $project: { // only return the shelters array, and not the id
+        $project: {
           _id: 0,
           shelters: 1
         }
       }
     ]);
 
-    res.json(data.length ? data[0].shelters : []); // return an empty array if no data is found
+    res.json(data.length ? data[0].shelters : []);
   } catch (error) {
     console.error('Error fetching data:', error);
     res.status(500).json({ message: 'Internal server error' });

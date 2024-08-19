@@ -54,8 +54,8 @@ function DataFetcher({data}) {
             setExpandedItem(item);
             setIsExpanded(true);
             // set the variables to data from the api call 
-            shelterLabels = jsonData.map(data => data.name);
-            shelterDataPoints = jsonData.map(data => data.unoccupied_beds);
+            shelterLabels = jsonData.map(data => data.date);
+            shelterDataPoints = jsonData.map(data => data.shelterInfo.unoccupied_beds);
         }
         catch(error){
             console.log("Error fetching this shelter's data", error);

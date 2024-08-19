@@ -15,25 +15,6 @@ import {
     Tooltip,
     Legend,
   } from 'chart.js';
-  
-// placeholder data for the chart
-const chartData1 = {
-    labels: ['Red', 'Orange', 'Blue'],
-    // datasets is an array of objects where each object represents a set of data to display corresponding to the labels above. for brevity, we'll keep it at one object
-    datasets: [
-        {
-          label: 'Popularity of colours',
-          data: [55, 23, 96],
-          // you can set indiviual colors for each bar
-          backgroundColor: [
-            'rgba(255, 255, 255, 0.6)',
-            'rgba(255, 255, 255, 0.6)',
-            'rgba(255, 255, 255, 0.6)',
-          ],
-          borderWidth: 1,
-        }
-    ]
-}
 
 // register the necessary components
 ChartJS.register(
@@ -44,6 +25,11 @@ ChartJS.register(
     Tooltip,
     Legend
 );
+
+// variable to hold data for the chart
+var shelterLabels;
+var shelterDataPoints;
+
 function DataFetcher({data}) {
     const [filterCapacity, setFilterCapacity] = useState(null)
     const [searchQuery, setSearchQuery] = useState("")
@@ -56,9 +42,24 @@ function DataFetcher({data}) {
     }
 
     // Make the expanded div visible and set the state to true
-    const expandItem = (item) => {
-        setExpandedItem(item);
-        setIsExpanded(true)
+    const expandItem = async(item) => {
+        try{
+            // fetch data from the api
+            const response = await fetch(`https://shelter-backend.vercel.app/api/shelter/${item.id}`);
+            if (!response.ok) {
+                throw new Error('Data fetching failed');
+            }
+            const jsonData = await response.json();
+            item = jsonData;
+            setExpandedItem(item);
+            setIsExpanded(true);
+            // set the variables to data from the api call 
+            shelterLabels = jsonData.map(data => data.name);
+            shelterDataPoints = jsonData.map(data => data.unoccupied_beds);
+        }
+        catch(error){
+            console.log("Error fetching this shelter's data", error);
+        }
     };
     
     // Set the isExpanded state to false to close the expanded div 
@@ -132,11 +133,11 @@ function DataFetcher({data}) {
                     {/* <LineChart chartData={chartData1} /> */}
                     <div style={{width: '400px', height: '300px'}}>
                         <Bar data={{
-                            labels: ["A","B","C"],
+                            labels: shelterLabels,
                             datasets: [
                                 {
-                                    label: "Revenue",
-                                    data: [200,300,400],
+                                    label: "Unoccupied Beds",
+                                    data: shelterDataPoints,
                                 },
                             ],
                             }}

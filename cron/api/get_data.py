@@ -8,7 +8,7 @@ import pandas as pd
 
 def get_data():
     # Get .env keys
-    load_dotenv('../.env')
+    load_dotenv('./my-app/.env')
     user = os.getenv('DB_USER')
     password = os.getenv('DB_PASSWORD')
 
@@ -77,8 +77,6 @@ def get_data():
     result = collection.insert_one(data_to_insert)
     print(f"Inserted document with ID: {result.inserted_id}")
     client.close()
-
-# For handling the request
 def handler(request):
     try:
         get_data()

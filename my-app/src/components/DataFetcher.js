@@ -49,13 +49,17 @@ function DataFetcher({data}) {
             if (!response.ok) {
                 throw new Error('Data fetching failed');
             }
-            const jsonData = await response.json();
-            item = jsonData;
+            // set the item to state
             setExpandedItem(item);
             setIsExpanded(true);
+
+            // get the json data from the API
+            const jsonData = await response.json();
+
             // set the variables to data from the api call 
             shelterLabels = jsonData.map(data => data.date);
             shelterDataPoints = jsonData.map(data => data.shelterInfo.unoccupied_beds);
+            
         }
         catch(error){
             console.log("Error fetching this shelter's data", error);
@@ -121,7 +125,6 @@ function DataFetcher({data}) {
             {/* Conditional rendering of expanded card after clicking on a div*/}
             {isExpanded && expandedItem && (
                 <div className="expanded-card">
-                {/* <Card sx={{zIndex: 'modal', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', overflow: 'scroll', width: '35vw', height: '50vh'}}> */}
                     <h2>{expandedItem.name}</h2>
                     <p>Sector: {expandedItem.sector}</p>
                     <p>Organization Name: {expandedItem.org_name}</p>
@@ -130,7 +133,6 @@ function DataFetcher({data}) {
                     <p>Occupancy Beds: {expandedItem.occupancy_beds}</p>
                     <p>Unoccupied Beds: {expandedItem.unoccupied_beds}</p>
                     <p>Unavailable Beds: {expandedItem.unavailable_beds}</p>
-                    {/* <LineChart chartData={chartData1} /> */}
                     <div style={{width: '400px', height: '300px'}}>
                         <Bar data={{
                             labels: shelterLabels,

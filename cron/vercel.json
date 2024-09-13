@@ -1,8 +1,15 @@
 {
-  "functions": {
-    "api/*.py": {
-      "runtime": "python3.12",  
-      "maxDuration": 60  
+    "rewrites": [
+      {
+        "source": "/api/get_data",
+        "destination": "/api/get_data"
+      }
+    ],
+    "functions": {
+      "api/get_data.py": {
+        "runtime": "python3.12", 
+        "maxDuration": 60 
+      }
     }
   }
-}
+  

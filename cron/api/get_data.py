@@ -5,20 +5,29 @@ import os
 from pymongo.server_api import ServerApi
 from datetime import datetime
 import pandas as pd
-from http.server import BaseHTTPRequestHandler
-from os.path import join
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.DEBUG)
 
 def get_data():
-    # Get .env keys
+    # Load environment variables
     load_dotenv('./my-app/.env')
     user = os.getenv('DB_USER')
     password = os.getenv('DB_PASSWORD')
-
     uri = os.getenv('DB_URL')
-    client = MongoClient(uri, server_api=ServerApi('1'))
 
-    db = client['shelter']
-    collection = db['shelterdata']
+    if not uri:
+        logging.error("Database URI not set.")
+        return
+
+    try:
+        client = MongoClient(uri, server_api=ServerApi('1'), socketTimeoutMS=50000, connectTimeoutMS=50000)
+        db = client['shelter']
+        collection = db['shelterdata']
+    except Exception as e:
+        logging.error(f"Failed to connect to MongoDB: {e}")
+        return
 
     base_url = "https://ckan0.cf.opendata.inter.prod-toronto.ca"
     url = base_url + "/api/3/action/package_show"
@@ -55,11 +64,11 @@ def get_data():
             
             data_to_insert['data'].extend(resource_data)
 
-    print("length:", len(data_to_insert['data']))
+    logging.info(f"Data length: {len(data_to_insert['data'])}")
 
     # Drop duplicate addresses
     data_df = pd.DataFrame(data_to_insert['data'])
-    data_df.dropna(subset=['address'], inplace=True) # Remove entries with no addresses
+    data_df.dropna(subset=['address'], inplace=True)  # Remove entries with no addresses
 
     # Replace all None values with "" in the unoccupied_beds column
     data_df['unoccupied_beds'] =  data_df['unoccupied_beds'].fillna("")
@@ -73,17 +82,11 @@ def get_data():
     # Convert to JSON form
     json_data = data_df.to_dict(orient='records')
     data_to_insert['data'] = json_data
-    # print(data_df.loc[data_df['name'] == "CONC Men's Shelter Lansdowne Ave"]) this was a test
 
-    # Insert Data
-    result = collection.insert_one(data_to_insert)
-    print(f"Inserted document with ID: {result.inserted_id}")
-    client.close()
- 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        get_data()
-        self.send_response(200)
-        self.send_header('Content-type','text/plain')
-        self.end_headers()
-        self.wfile.write(b'Successful!')
+    try:
+        result = collection.insert_one(data_to_insert)
+        logging.info(f"Inserted document with ID: {result.inserted_id}")
+    except Exception as e:
+        logging.error(f"Failed to insert data: {e}")
+    finally:
+        client.close()

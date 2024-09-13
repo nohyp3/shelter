@@ -82,6 +82,7 @@ def get_data():
  
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        get_data()
         self.send_response(200)
         self.send_header('Content-type','text/plain')
         self.end_headers()

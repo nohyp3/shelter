@@ -17,7 +17,7 @@ def get_data():
     load_dotenv('./my-app/.env')
     user = os.getenv('DB_USER')
     password = os.getenv('DB_PASSWORD')
-    uri = os.getenv('DB_URL')
+    uri = os.getenv('MONGODB_URI')
 
     if not uri:
         logging.error("Database URI not set.")

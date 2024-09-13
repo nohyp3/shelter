@@ -7,7 +7,6 @@
     ],
     "functions": {
       "api/get_data.py": {
-        "runtime": "python3.12", 
         "maxDuration": 60 
       }
     }

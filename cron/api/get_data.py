@@ -5,6 +5,8 @@ import os
 from pymongo.server_api import ServerApi
 from datetime import datetime
 import pandas as pd
+from http.server import BaseHTTPRequestHandler
+from os.path import join
 import logging
 
 # Setup logging
@@ -90,3 +92,11 @@ def get_data():
         logging.error(f"Failed to insert data: {e}")
     finally:
         client.close()
+ 
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        get_data()
+        self.send_response(200)
+        self.send_header('Content-type','text/plain')
+        self.end_headers()
+        self.wfile.write(b'Successful!')

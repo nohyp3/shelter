@@ -5,6 +5,8 @@ import os
 from pymongo.server_api import ServerApi
 from datetime import datetime
 import pandas as pd
+from http.server import BaseHTTPRequestHandler
+from os.path import join
 
 def get_data():
     # Get .env keys
@@ -77,15 +79,11 @@ def get_data():
     result = collection.insert_one(data_to_insert)
     print(f"Inserted document with ID: {result.inserted_id}")
     client.close()
-def handler(request):
-    try:
-        get_data()
-        return {
-            "statusCode": 200,
-            "body": "Daily task ran successfully"
-        }
-    except Exception as e:
-        return {
-            "statusCode": 500,
-            "body": f"An error occurred: {e}"
-        }
+ 
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        
+        self.send_response(200)
+        self.send_header('Content-type','text/plain')
+        self.end_headers()
+        return

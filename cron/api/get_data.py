@@ -37,7 +37,8 @@ def get_data():
     package = requests.get(url, params=params).json()
 
     data_to_insert = {
-        "date": datetime.now().strftime('%B %d %Y'),
+        "date": datetime.now(),
+        "date_formatted": datetime.now().strftime('%B %d %Y'),
         "data": []
     }
 

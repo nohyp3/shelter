@@ -57,7 +57,7 @@ function DataFetcher({data}) {
             const jsonData = await response.json();
 
             // set the variables to data from the api call 
-            shelterLabels = jsonData.map(data => data.date);
+            shelterLabels = jsonData.map(data => data.date_formatted);
             shelterDataPoints = jsonData.map(data => data.shelterInfo.unoccupied_beds);
             
         }

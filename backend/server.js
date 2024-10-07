@@ -88,6 +88,7 @@ app.get('/api/shelter/:shelterId', async (req, res) => {
         $project: {
           _id: 0,
           date: 1,
+          date_formatted: "$date_formatted",
           shelterInfo: "$data"
         }
       },
@@ -97,6 +98,7 @@ app.get('/api/shelter/:shelterId', async (req, res) => {
           shelters: {
             $push: {
               date: "$date",
+              date_formatted: "$date_formatted",
               shelterInfo: "$shelterInfo"
             }
           }

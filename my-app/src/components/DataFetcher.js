@@ -145,6 +145,12 @@ function DataFetcher({data}) {
                             }}
                             options={{
                                 scales: {
+                                    x: {
+                                        ticks: {
+                                            maxRotation: 90,
+                                            minRotation: 90
+                                        }
+                                    },
                                     y: {
                                         beginAtZero: true,
                                     },
